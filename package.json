@@ -1,0 +1,48 @@
+{
+  "name": "reportsbackend",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon restServer.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aedes": "^0.46.2",
+    "ajv": "^8.11.0",
+    "all-object-keys": "^2.2.0",
+    "colors": "^1.4.0",
+    "crc": "^4.1.0",
+    "deep-object-diff": "^1.1.7",
+    "delay": "^5.0.0",
+    "dotenv": "^12.0.3",
+    "express": "^4.18.2",
+    "find-config": "^1.0.0",
+    "get-value": "^3.0.1",
+    "internal-ip": "^6.2.0",
+    "is-array": "^1.0.1",
+    "is-json": "^2.0.1",
+    "is-valid-json": "^1.0.2",
+    "moment": "^2.29.1",
+    "mongodb": "^4.9.1",
+    "network": "^0.6.1",
+    "path": "^0.12.7",
+    "public-ip": "^6.0.1",
+    "queue-fifo": "^0.2.6",
+    "random-item": "^3.1.0",
+    "set-value": "^4.1.0",
+    "uniqid": "^5.4.0",
+    "util": "^0.12.4",
+    "winston": "^3.8.2",
+    "ws": "^8.4.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.19.6",
+    "@babel/node": "^7.20.0",
+    "@babel/preset-env": "^7.19.4",
+    "nodemon": "^2.0.20"
+  }
+}

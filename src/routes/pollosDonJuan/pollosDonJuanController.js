@@ -5,7 +5,8 @@ import { DbConexionProvider } from "../../DbConexionProvider/DbConexionProvider.
 
 const db = new DbConexionProvider();
 
-router.get("/1", async (req, res) => {
+router.get("/", async (req, res) => {
+  console.log(`Param id: ${req.query.id}`);
   console.log(`Param inicio: ${req.query.inicio}`);
   console.log(`Param fin: ${req.query.fin}`);
   let filter = {
@@ -16,6 +17,9 @@ router.get("/1", async (req, res) => {
   };
   console.log(`filter: ${JSON.stringify(filter)}`);
   let conexionStatus = await db.getConexionStatus();
+  console.log(
+    `pollosdonjuanController: conexionStatus: ${JSON.stringify(conexionStatus)}`
+  );
   if (!conexionStatus.result) {
     res.json(conexionStatus);
   }

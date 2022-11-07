@@ -8,7 +8,7 @@ const require = createRequire(import.meta.url);
 //const db = new DbConexionProvider();
 
 const app = express();
-import pollosDonJuanRouter from "./src/routes/pollosDonJuan/pollosDonJuanController.js";
+import pollosDonJuanRouter from "../src/routes/pollosDonJuan/pollosDonJuanController/pollosDonJuanController.js";
 //import { frigorifico } from "./src/restControllers/pollosdonjuan/controller.js";
 
 app.use("/pollosdonjuan", pollosDonJuanRouter);

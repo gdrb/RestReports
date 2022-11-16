@@ -11,8 +11,10 @@ export const LOG_LEVES = {
 
 export const FUNCTIONS_NAMES = {
   EVENTS: "/EVENTS: =>",
+  REPORTS: "/REPORTS =>",
 };
 
 export const FUNCTION_LOG_LEVEL = {
   EVENTS: LOG_LEVES.VARIABLES,
+  REPORTS: LOG_LEVES.VARIABLES,
 };

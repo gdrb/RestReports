@@ -60,7 +60,21 @@ export const getMaxTemp = (dataArray) => {
       maxTemp = Number(dataArray[i].temp);
     }
   }
-  return String(maxTemp);
+  return String(Number(maxTemp).toFixed(1));
+};
+
+export const getMinTemp = (dataArray) => {
+  let minTemp = 100;
+  for (let i = 0; i < dataArray.length; i++) {
+    if (minTemp > Number(dataArray[i].temp)) {
+      minTemp = Number(dataArray[i].temp);
+    }
+  }
+  return String(Number(minTemp).toFixed(1));
+};
+
+export const getLastTemp = (dataArray) => {
+  return String(Number(dataArray[0].temp).toFixed(1));
 };
 
 const removeTag = (data) => {

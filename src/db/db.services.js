@@ -1043,7 +1043,7 @@ export class DataBase {
       LOGGER_FUNCTION_LOG_LEVEL.FIND >= LOGGER_LOG_LEVES.VARIABLES
         ? Logger.getLogger(this.LOGGER_NAME + LOGGER_FUNCTIONS.FIND).info(
             `Received collection: ${JSON.stringify(collection)} \n` +
-              `Received query: ${JSON.stringify(query)} \n` +
+              `Received query: ${JSON.stringify(query, null, 2)} \n` +
               `Received projection: ${JSON.stringify(projection)}`
           )
         : false;

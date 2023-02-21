@@ -837,8 +837,6 @@ export class MongoDBServices {
           )
         : false;
 
-      console.dir(query, { depth: null });
-
       if (!validateString(collection)) {
         LOGGER_FUNCTION_LOG_LEVEL.FIND >= LOGGER_LOG_LEVES.ERRORS
           ? Logger.getLogger(this.LOGGER_NAME + LOGGER_FUNCTIONS.FIND).error(
@@ -885,7 +883,7 @@ export class MongoDBServices {
         .db(this.dbName)
         .collection(collection)
         .find(query, projection)
-        .limit(10)
+        .limit(100)
         .sort({ _id: -1 })
         .toArray();
 

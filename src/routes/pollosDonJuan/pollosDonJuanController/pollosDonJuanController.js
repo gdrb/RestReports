@@ -4,22 +4,29 @@ const router = express.Router();
 import { DbConexionProvider } from "../../../DbConexionProvider/DbConexionProvider.services.js";
 import {
   getMaxTemp,
+  getMaxValue,
   getMinTemp,
+  getMinValue,
   getLastTemp,
+  getLastValue,
   retrieveTempValueTimeArray,
-} from "../tempHelpers/tempHelpers.js";
+  retrieveValueTimeArray,
+} from "../sensors/tempHelpers/tempHelpers.js";
+
 import {
   CLASS_NAME,
   FUNCTIONS_NAMES,
   FUNCTION_LOG_LEVEL,
   LOG_LEVES,
 } from "./pollosDonJuanController.logger.config.js";
+import { getFilter } from "../sensors/filters/filters.js";
 
-import colors from "colors";
 import moment from "moment/moment.js";
+import { getReport } from "../Reports/GetReport.js";
 
 const db = new DbConexionProvider();
 
+// find all reports defined for a client
 router.get("/reports", async (req, res) => {
   try {
     if (FUNCTION_LOG_LEVEL.REPORTS >= LOG_LEVES.BASIC) {
@@ -53,11 +60,15 @@ router.get("/reports", async (req, res) => {
 
     let data = await db.find("reports", {}, {});
 
+    for (let i = 0; i < data.response.length; i++) {
+      delete data.response[i].propietarios;
+    }
+
     if (FUNCTION_LOG_LEVEL.REPORTS >= LOG_LEVES.VARIABLES) {
       console.log(
         `${CLASS_NAME} ${
           FUNCTIONS_NAMES.REPORTS
-        } Retrived Data: ${JSON.stringify(data)}`
+        } Retrieved Data: ${JSON.stringify(data, null, 2)}`
       );
     }
 
@@ -86,13 +97,17 @@ router.get("/reports", async (req, res) => {
     }
 
     res.json(data);
-    if (FUNCTION_LOG_LEVEL.EVENTS >= LOG_LEVES.BASIC) {
-      console.log(`${CLASS_NAME} ${FUNCTIONS_NAMES.EVENTS} Finished`.cyan);
+
+    if (FUNCTION_LOG_LEVEL.REPORTS >= LOG_LEVES.BASIC) {
+      console.log(`${CLASS_NAME} ${FUNCTIONS_NAMES.REPORTS} Finished`.cyan);
     }
   } catch (e) {}
 });
 
 router.get("/events", async (req, res) => {
+  let response = (await getReport(req.query, db)).response;
+  return res.json(response);
+
   if (FUNCTION_LOG_LEVEL.EVENTS >= LOG_LEVES.BASIC) {
     console.log(`${CLASS_NAME} ${FUNCTIONS_NAMES.EVENTS} Start`.cyan);
   }
@@ -108,15 +123,27 @@ router.get("/events", async (req, res) => {
     );
   }
 
-  let filter = {
+  if (FUNCTION_LOG_LEVEL.EVENTS >= LOG_LEVES.DETAILED) {
+    console.log(
+      `${CLASS_NAME} ${FUNCTIONS_NAMES.EVENTS} Creating filter from received data`
+        .yellow
+    );
+  }
+
+  /*let filter = {
     $and: [
-      { "datos.idFromTh": { $gte: `${req.query.id}` } },
-      { "datos.idToTh": { $gte: `${req.query.id}` } },
+      { "datos.idFromTh": { $eq: `${req.query.id}` } },
+      { "datos.idToTh": { $eq: `${req.query.id}` } },
       { "datos.type": `tempChange` },
-      { "datos.processDateTime": { $gte: new Date(`${req.query.inicio}`) } },
-      { "datos.processDateTime": { $lte: new Date(`${req.query.fin}`) } },
+      { "datos.processDateTime": { $gte: `${req.query.inicio}` } },
+      { "datos.processDateTime": { $lte: `${req.query.fin}` } },
+      //{ "datos.processDateTime": { $gte: new Date(`${req.query.inicio}`) } },
+      //{ "datos.processDateTime": { $lte: new Date(`${req.query.fin}`) } },
     ],
-  };
+  };*/
+
+  let filterResponse = getFilter(req.query);
+  let filter = filterResponse.result ? filterResponse.response : null;
 
   if (FUNCTION_LOG_LEVEL.EVENTS >= LOG_LEVES.VARIABLES) {
     console.log(
@@ -159,12 +186,18 @@ router.get("/events", async (req, res) => {
 
   if (FUNCTION_LOG_LEVEL.EVENTS >= LOG_LEVES.DETAILED) {
     console.log(
+      `${CLASS_NAME} ${FUNCTIONS_NAMES.EVENTS} Connected to Database`.yellow
+    );
+  }
+
+  if (FUNCTION_LOG_LEVEL.EVENTS >= LOG_LEVES.DETAILED) {
+    console.log(
       `${CLASS_NAME} ${FUNCTIONS_NAMES.EVENTS} Retrieving Data from Database`
         .yellow
     );
   }
 
-  let data = await db.find("eventsBe", filter, {});
+  let data = filter ? await db.find("eventsBe", filter, {}) : null;
 
   if (FUNCTION_LOG_LEVEL.EVENTS >= LOG_LEVES.VARIABLES) {
     console.log(
@@ -176,12 +209,22 @@ router.get("/events", async (req, res) => {
     );
   }
 
+  if (FUNCTION_LOG_LEVEL.EVENTS >= LOG_LEVES.DETAILED) {
+    console.log(
+      `${CLASS_NAME} ${FUNCTIONS_NAMES.EVENTS} Creating result data`.yellow
+    );
+  }
+
   if (!data.result) {
     let response = {
-      maxTemp: ``,
+      maxValue: ``,
+      minValue: ``,
+      lastValue: ``,
+      valueValueDateTimeArray: [],
+      /*maxTemp: ``,
       minTemp: ``,
       lastTemp: ``,
-      tempValueDateTimeArray: [],
+      tempValueDateTimeArray: [],*/
     };
     res.json(response);
     console.log(`${CLASS_NAME} ${FUNCTIONS_NAMES.EVENTS} Error: DB error`);
@@ -199,10 +242,13 @@ router.get("/events", async (req, res) => {
     );
   }
 
-  for (let i = 0; i < data.response.length; i++) {
+  if (FUNCTION_LOG_LEVEL.EVENTS >= LOG_LEVES.VARIABLES) {
     console.log(
-      `datos.processDateTime : ${data.response[i].datos.processDateTime}`
+      `${CLASS_NAME} ${FUNCTIONS_NAMES.EVENTS} Retrieved data length ${data.response.length}`
     );
+  }
+
+  for (let i = 0; i < data.response.length; i++) {
     data.response[i].datos.processDateTime = moment(
       data.response[i].datos.processDateTime
     )
@@ -210,9 +256,9 @@ router.get("/events", async (req, res) => {
       .format();
   }
 
-  if (FUNCTION_LOG_LEVEL.EVENTS >= LOG_LEVES.VARIABLES) {
+  if (FUNCTION_LOG_LEVEL.EVENTS >= 4 /*LOG_LEVES.VARIABLES*/) {
     console.log(
-      `${CLASS_NAME} ${FUNCTIONS_NAMES.EVENTS} Retrived Data: ${JSON.stringify(
+      `${CLASS_NAME} ${FUNCTIONS_NAMES.EVENTS} Retrieved Data: ${JSON.stringify(
         data,
         null,
         2
@@ -222,10 +268,17 @@ router.get("/events", async (req, res) => {
 
   if (data.response.length == 0) {
     let response = {
-      maxTemp: ``,
-      minTemp: ``,
-      lastTemp: ``,
-      tempValueDateTimeArray: [],
+      result: true,
+      response: {
+        maxValue: ``,
+        minValue: ``,
+        lastValue: ``,
+        valueDateTimeArray: [],
+        /*maxTemp: ``,
+        minTemp: ``,
+        lastTemp: ``,
+        tempValueDateTimeArray: [],*/
+      },
     };
     res.json(response);
     if (FUNCTION_LOG_LEVEL.EVENTS >= LOG_LEVES.BASIC) {
@@ -237,7 +290,11 @@ router.get("/events", async (req, res) => {
   }
 
   // Retrieving Temp Value dateTime Array
-  let tempValueTimeArrayResponse = retrieveTempValueTimeArray(data.response);
+  //let tempValueTimeArrayResponse = retrieveTempValueTimeArray(data.response);
+  let tempValueTimeArrayResponse = retrieveValueTimeArray(
+    req.query.type,
+    data.response
+  );
 
   if (FUNCTION_LOG_LEVEL.EVENTS >= LOG_LEVES.VARIABLES) {
     console.log(
@@ -254,33 +311,36 @@ router.get("/events", async (req, res) => {
   }
 
   // Retrieving Max. Temp.
-  let maxTemp = getMaxTemp(tempValueTimeArrayResponse.response);
+  let maxTemp = getMaxValue(tempValueTimeArrayResponse.response);
   if (FUNCTION_LOG_LEVEL.EVENTS >= LOG_LEVES.VARIABLES) {
     console.log(`${CLASS_NAME} ${FUNCTIONS_NAMES.EVENTS} Max Temp: ${maxTemp}`);
   }
 
   // Retrieving Min. Temp.
-  let minTemp = getMinTemp(tempValueTimeArrayResponse.response);
+  let minTemp = getMinValue(tempValueTimeArrayResponse.response);
   if (FUNCTION_LOG_LEVEL.EVENTS >= LOG_LEVES.VARIABLES) {
     console.log(`${CLASS_NAME} ${FUNCTIONS_NAMES.EVENTS} Min Temp: ${minTemp}`);
   }
 
   // Retrieving Last Temp.
-  let lastTemp = getLastTemp(tempValueTimeArrayResponse.response);
+  let lastTemp = getLastValue(tempValueTimeArrayResponse.response);
   if (FUNCTION_LOG_LEVEL.EVENTS >= LOG_LEVES.VARIABLES) {
     console.log(
       `${CLASS_NAME} ${FUNCTIONS_NAMES.EVENTS} Min Temp: ${lastTemp}`
     );
   }
 
-  let response = {
-    maxTemp: maxTemp,
-    minTemp: minTemp,
-    lastTemp: lastTemp,
-    tempValueDateTimeArray: tempValueTimeArrayResponse.response,
+  let responseData = {
+    result: true,
+    response: {
+      maxTemp: maxTemp,
+      minTemp: minTemp,
+      lastTemp: lastTemp,
+      tempValueDateTimeArray: tempValueTimeArrayResponse.response,
+    },
   };
 
-  res.json(response);
+  res.json(responseData);
   if (FUNCTION_LOG_LEVEL.EVENTS >= LOG_LEVES.BASIC) {
     console.log(`${CLASS_NAME} ${FUNCTIONS_NAMES.EVENTS} Finished`.cyan);
   }

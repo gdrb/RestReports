@@ -1,3 +1,4 @@
+/* Import defined Reports // */
 import { allBatchCounterReset } from "./AllBatchCounterReset/AllBatchCounterReset.js";
 import { mmlTempTime } from "./MMLTempTime/MMLTempTime.js";
 
@@ -40,12 +41,13 @@ async function getReport(receivedData, db) {
         )}`
       );
     }
+
     if (debug.GetReport >= 1) {
       console.log(`${functionName}GetReport: Finished`.cyan);
     }
     return { result: true, response: response };
   } catch (e) {
-    console.log(`${functionName}GetReport: Error: ${e}`);
+    console.log(`${functionName}GetReport: Error: ${e}`.red);
   }
 }
 

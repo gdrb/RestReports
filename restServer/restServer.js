@@ -1,5 +1,3 @@
-//import { DbConexionProvider } from "./src/DbConexionProvider/DbConexionProvider2.services.js";
-
 import express from "express";
 import cors from "cors";
 // Define "require"
@@ -16,21 +14,15 @@ const PORT = process.env.SERVIDOR_REST_PORT;
 //const db = new DbConexionProvider();
 
 const app = express();
-import pollosDonJuanRouter from "../src/routes/pollosDonJuan/pollosDonJuanController/pollosDonJuanController.js";
-//import { frigorifico } from "./src/restControllers/pollosdonjuan/controller.js";
-
+import client1Router from "../src/routes/client1/client1Controller/client1Controller.js";
 app.use(
   cors({
-    origin: "http://example.com:6850",
+    origin: "http://localhost:3000",
   })
 );
 
-app.use("/pollosdonjuan", cors(), pollosDonJuanRouter);
-
-app.get("/", function (req, res) {
-  res.send("Hello World");
-});
+app.use("/client1", cors(), client1Router);
 
 app.listen(PORT, async function () {
-  console.log("Servidor de ThingRest listening on port: ", PORT);
+  console.log("Reports server listening on port: ", PORT);
 });

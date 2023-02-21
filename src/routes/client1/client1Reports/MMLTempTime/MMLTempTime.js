@@ -175,6 +175,7 @@ async function getFormatedFinalData(receivedData) {
   }
 
   let valueTimeArray = [];
+
   for (let i = 0; i < receivedData.length; i++) {
     let keyPairData = {
       type: "",
